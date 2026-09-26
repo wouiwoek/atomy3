@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Моя идеальная полка утренней рутины | Atomy</title>
+    
+    <!-- Подключаем CSS файл -->
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Библиотека для перетаскивания пальцем на телефонах и мышкой на ПК -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="logo">ATOMY ROUTINE BUILDER</div>
+            <p class="subtitle">Перетащи баночки пальцем прямо на полку</p>
+        </header>
+
+        <main class="shelf-app">
+            
+            <!-- Статистика -->
+            <div class="stats-panel">
+                <div>
+                    <div class="stat-val" id="total-time">0 мин</div>
+                    <div class="stat-lbl">Время на рутину</div>
+                </div>
+                <div>
+                    <div class="stat-val" id="items-count">0/10</div>
+                    <div class="stat-lbl">Банки на полке</div>
+                </div>
+            </div>
+
+            <!-- СЦЕНА С ПОЛКОЙ (Фон-картинка задается в om.css) -->
+            <div class="bathroom-scene">
+                <div class="shelf-drop-zone" id="shelf-zone">
+                    <div class="empty-hint" id="empty-hint">Перетащи баночки сюда</div>
+                </div>
+            </div>
+
+            <h3 class="section-title">Выбери средства:</h3>
+            
+            <!-- ПАЛИТРА ДЛЯ ВЫБОРА БАНОЧЕК -->
+            <div class="products-palette" id="palette-zone">
+                
+                <div class="draggable-card" data-id="mist" data-time="1" data-name="3-Sec Mist">
+                    <img src="img/спрей.png" alt="Мист">
+                    <span>3-Sec Beauty Water</span>
+                    <div class="time-badge"> 1 мин</div>
+                </div>
+
+                <div class="draggable-card" data-id="centella" data-time="1" data-name="Centella Toner">
+                    <img src="img/тонер.png" alt="Тонер">
+                    <span>Centella Toner</span>
+                    <div class="time-badge"> 1 мин</div>
+                </div>
+
+                <div class="draggable-card" data-id="patches" data-time="15" data-name="Hydrogel Patches">
+                    <img src="img/патчи.png" alt="Патчи">
+                    <span>Hydrogel Patches</span>
+                    <div class="time-badge"> 15 мин</div>
+                </div>
+
+                <div class="draggable-card" data-id="mask" data-time="25" data-name="Evening Care Peel-Off Mask">
+                    <img src="img/маскапленка.png" alt="Маска пленка">
+                    <span>Evening Care Peel-Off Mask</span>
+                    <div class="time-badge"> 25 мин</div>
+                </div>
+
+                <div class="draggable-card" data-id="deap" data-time="1" data-name="Evening Care Deap Cleanser">
+                    <img src="img/глубокое.png" alt="Глубокое">
+                    <span>Evening Care Deap Cleanser</span>
+                    <div class="time-badge"> 1 мин</div>
+                </div>
+
+                <div class="draggable-card" data-id="mask" data-time="20" data-name="Daily Expert Mask Moisturizing">
+                    <img src="img/маскиувл.png" alt="Маски тканевые">
+                    <span>Daily Expert Mask Moisturizing</span>
+                    <div class="time-badge"> 20 мин</div>
+                </div>
+
+                <div class="draggable-card" data-id="oil" data-time="2" data-name="Hair Essential Oil">
+                    <img src="img/масло.png" alt="Масло">
+                    <span>Hair Essential Oil</span>
+                    <div class="time-badge"> 2 мин</div>
+                </div>
+
+                <div class="draggable-card" data-id="foam" data-time="3" data-name="Evening Care Foam Cleanser">
+                    <img src="img/пенка.png" alt="Пенка">
+                    <span>Evening Care Foam Cleanser</span>
+                    <div class="time-badge"> 3 мин</div>
+                </div>
+
+                <div class="draggable-card" data-id="protein" data-time="10" data-name="Protein Intensive Hair Care Set">
+                    <img src="img/протеиннабор.png" alt="Протеин набор">
+                    <span>Protein Intensive Hair Care Set</span>
+                    <div class="time-badge"> 10 мин</div>
+                </div>
+
+                 <div class="draggable-card" data-id="marine" data-time="20" data-name="Marine Ampoule Gel Mask">
+                    <img src="img/морскаямаска.png" alt="Гидрогел маска">
+                    <span>Marine Ampoule Gel Mask</span>
+                    <div class="time-badge"> 20 мин</div>
+                </div>
+
+
+            </div>
+
+            <div class="cta-box">
+                <button class="tg-button" onclick="shareRoutine()">СОХРАНИТЬ РУТИНУ В TELEGRAM</button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT ЛОГИКА -->
+    <script>
+        const shelfZone = document.getElementById('shelf-zone');
+        const paletteZone = document.getElementById('palette-zone');
+        const emptyHint = document.getElementById('empty-hint');
+
+        // Инициализация Drag-and-Drop для полки
+        new Sortable(shelfZone, {
+            group: 'shared',
+            animation: 150,
+            onAdd: function () {
+                checkShelfLimit();
+                recalculate();
+            },
+            onRemove: function () {
+                recalculate();
+            }
+        });
+
+        // Инициализация Drag-and-Drop для палитры выбора
+        new Sortable(paletteZone, {
+            group: 'shared',
+            animation: 150
+        });// Ограничение максимум 10 баночек на полке
+        function checkShelfLimit() {
+            const items = shelfZone.querySelectorAll('.draggable-card');
+            if (items.length > 10) {
+                const lastItem = items[items.length - 1];
+                paletteZone.appendChild(lastItem);
+                alert('На полку помещается максимум 10 средств!');
+            }
+        }
+
+        // Пересчет времени и количества
+        function recalculate() {
+            const items = shelfZone.querySelectorAll('.draggable-card');
+            let totalTime = 0;
+
+            if (items.length > 0) {
+                emptyHint.style.display = 'none';
+            } else {
+                emptyHint.style.display = 'block';
+            }
+
+            items.forEach(item => {
+                totalTime += parseInt(item.getAttribute('data-time')) || 0;
+            });
+
+            document.getElementById('total-time').textContent = `${totalTime} мин`;
+            document.getElementById('items-count').textContent = `${items.length}/10`;
+        }
+
+        function shareRoutine() {
+            const items = shelfZone.querySelectorAll('.draggable-card');
+            if (items.length === 0) {
+                alert('Сначала перетащи хотя бы одну баночку на полку!');
+                return;
+            }
+            window.open('https://t.me/+jZDhTRAoYto0ZmEy', '_blank');
+        }
+    </script>
+</body>
+</html>
